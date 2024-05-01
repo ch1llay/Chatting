@@ -2,41 +2,62 @@ package org.example;
 
 // Client side
 
+import org.example.utils.Json;
+
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static org.example.utils.Credentials.PORT;
+import static org.example.utils.Credentials.SERVER_ADDRESS;
 
 
 public class MessageClient {
-    private static final String SERVER_ADDRESS = "localhost";
-    private static final int PORT = 12345;
 
-    public static void main(String[] args) throws IOException {
+    private String username;
+    private PrintWriter out;
+    private BufferedReader in;
+
+
+    public MessageClient(String username) throws IOException {
+        this.username = username;
         Socket socket = new Socket(SERVER_ADDRESS, PORT);
 
-        // Register with the server and send messages
-        var out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-        var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-        System.out.println("Enter user name");
-        Scanner scanner = new Scanner(System.in);
-
-        String username = scanner.nextLine();
+        out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out.println(username);
+    }
 
-        var listener = new ClientListener(in);
+    public boolean Send(String usernameTo, String message) {
+        var req = Json.toJson(new Message(message, username, usernameTo));
+        out.println(req);
+        return true;
+    }
 
-        var tListener = new Thread(listener);
-        tListener.start();
+    public void StartReceiving(Consumer<Message> f) throws IOException {
+        Runnable task = () -> {
+            while (true) {
+                System.out.println("Waiting for message...");
+                String resp = null;
+                try {
+                    resp = in.readLine();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                if (resp == null) {
+                    continue;
+                }
+                var message = Json.fromJson(resp, Message.class);
+                f.accept(message);
+            }
+        };
 
-        var writer = new ClientWriter(out, username);
+        Thread thread = new Thread(task);
+        thread.start();
 
-        var tWriter = new Thread(writer);
-        tWriter.start();
-
-        while (true) {}
-
-        //System.out.println("Disconnected from " + socket.getInetAddress().toString());
-        //socket.close();
     }
 }

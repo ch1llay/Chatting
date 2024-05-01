@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
+import static org.example.utils.Credentials.PORT;
+
 
 public class MessageServer {
-    private static final int PORT = 12345;
     private static final String ADDRESS = "localhost";
     private static ArrayList<ServerNode> serverNodes;
 

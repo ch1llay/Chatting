@@ -46,7 +46,6 @@ public class ServerNode implements Runnable {
         }
 
         while (true) {
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
             var resp = in.readLine();
 
