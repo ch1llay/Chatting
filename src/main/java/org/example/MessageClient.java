@@ -4,13 +4,9 @@ package org.example;
 
 import org.example.utils.Json;
 
-import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
-import java.util.Scanner;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import static org.example.utils.Credentials.PORT;
 import static org.example.utils.Credentials.SERVER_ADDRESS;
@@ -37,6 +33,14 @@ public class MessageClient {
         out.println(req);
         return true;
     }
+
+    public boolean SendCommand(String command) throws IOException {
+        var req = Json.toJson(new Message(username, command));
+        out.println(req);
+
+        return true;
+    }
+
 
     public void StartReceiving(Consumer<Message> f) throws IOException {
         Runnable task = () -> {

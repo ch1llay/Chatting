@@ -6,7 +6,10 @@ import org.example.utils.Json;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ServerNode implements Runnable {
 
@@ -32,7 +35,14 @@ public class ServerNode implements Runnable {
 
         if (username == null) {
             return false;
-        } else {
+        }
+        else {
+            var c = serverNodes.stream().filter(x -> x.username.equals(username)).count();
+            System.out.println(c);
+            if (c > 1) {
+                return false;
+            }
+
             System.out.println("Registered new user: " + username);
             return true;
         }
@@ -41,31 +51,46 @@ public class ServerNode implements Runnable {
     public void Execute() throws IOException {
         var isSuccessInit = Init();
 
-        if(!isSuccessInit){
+        if (!isSuccessInit) {
+            System.out.println(false);
             return;
         }
+        try {
+            while (true) {
 
-        while (true) {
+                var resp = in.readLine();
 
-            var resp = in.readLine();
+                var message = Json.fromJson(resp, Message.class);
 
-            var message = Json.fromJson(resp, Message.class);
-
-            if (message != null) {
-                System.out.printf("from %s: %s\n", username, resp);
-                sendTo(message);
+                if (message != null) {
+                    if (message.Command != null) {
+                        if (message.Command.equals("get users")) {
+                            System.out.println("users");
+                            var users = serverNodes.stream().map(x -> x.username).collect(Collectors.joining(","));
+                            var serverResp = new Message(users);
+                            serverResp.To = username;
+                            serverResp.Command = message.Command;
+                            sendTo(serverResp);
+                            continue;
+                        }
+                    }
+                    System.out.printf("from %s: %s\n", username, resp);
+                    sendTo(message);
 //                    for (Map.Entry<String, List<Message>> entry : messages.entrySet()) {
 //                        if (!entry.getKey().equals(username)) {
 //                            entry.getValue().add(new Message(message));
 //                        }
 //                    }
-            } else {
-                break;
+                } else {
+                    break;
+                }
             }
-        }
 
-        System.out.println("Disconnected from " + socket.getInetAddress().toString());
-        socket.close();
+        } catch (Exception e) {
+            serverNodes.remove(serverNodes.stream().filter(x -> x.username.equals(username)).findFirst().get());
+            System.out.println("Disconnected from " + socket.getInetAddress().toString());
+            socket.close();
+        }
     }
 
     public String getUsername() {

@@ -14,18 +14,24 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import org.example.Message;
 import org.example.MessageClient;
+import org.example.User;
+import org.example.utils.Json;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ClientUI extends Application {
     String firstElem = "Выберите получателя";
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        var username = "user1";
-        var client = new MessageClient(username);
+    ArrayList<String> Users;
+    MessageClient client;
+    String username;
 
+    private void showChat(Stage primaryStage) throws IOException {
         var grid = new GridPane();
-
         var label = new TextArea();
+
         label.setEditable(false);
         var sendButton = new Button(">");
         var textField = new TextField();
@@ -34,33 +40,87 @@ public class ClientUI extends Application {
         grid.add(textField, 0, 1);
         grid.add(sendButton, 2, 1);
 
-        primaryStage.setScene(new Scene(grid, 520, 250));
-        primaryStage.show();
 
         ComboBox<String> combo = new ComboBox<>();
-        combo.getItems().addAll(firstElem, "123");
+        combo.getItems().addAll(firstElem);
         combo.getSelectionModel().clearAndSelect(0);
         combo.getSelectionModel().selectedItemProperty().addListener((observableValue, s, t1) -> System.out.println(t1));
         grid.add(combo, 0, 2);
         grid.add(updateUsersButton, 1, 2);
 
-        updateUsersButton.setOnAction((ActionEvent e) -> {
-            // Send message to server
-            var message = textField.getText();
-            System.out.println("Sending message: " + message);
-        });
+        primaryStage.setScene(new Scene(grid, 520, 250));
+        primaryStage.show();
 
-        sendButton.setOnAction((ActionEvent e) -> {
-            // Send message to server
-            var message = textField.getText();
-            label.setText(label.getText() + "me: " + message + "\n");
-            client.Send(username, message);
-        });
+        client = new MessageClient(username);
 
         client.StartReceiving((Message m) -> {
+            System.out.println(Json.toJson(m));
+            if (m.ServerResp != null) {
+                System.out.println(m.ServerResp);
+                if (m.Command.equals("get users")) {
+                    Users = new ArrayList<>(List.of(m.ServerResp.split(",")));
+                    System.out.println(Json.toJson(Users));
+                }
+                return;
+            }
+
             System.out.println(m.Text);
             label.setText(label.getText() + m.From + ": " + m.Text + "\n");
         });
+
+        updateUsersButton.setOnAction((ActionEvent e) -> {
+            try {
+                client.SendCommand("get users");
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            if (Users == null) {
+                return;
+            }
+
+            combo.getItems().clear();
+            combo.getItems().addAll(Users);
+            combo.getSelectionModel().clearAndSelect(0);
+        });
+
+        sendButton.setOnAction((ActionEvent e) -> {
+            var message = textField.getText();
+            label.setText(label.getText() + "me: " + message + "\n");
+            var to = combo.getSelectionModel().getSelectedItem();
+            if (to != null) {
+                client.Send(to, message);
+            }
+        });
+    }
+
+    private void showReg(Stage primaryStage) {
+        var gridUsername = new GridPane();
+        var userNameField = new TextField();
+        userNameField.promptTextProperty().setValue("username");
+        var userNameButton = new Button("Зарегистрироваться в чате");
+
+        gridUsername.add(userNameField, 0, 0);
+        gridUsername.add(userNameButton, 0, 1);
+
+        primaryStage.setScene(new Scene(gridUsername, 520, 250));
+        primaryStage.show();
+
+        userNameButton.setOnAction((ActionEvent e) -> {
+            username = userNameField.getText();
+            try {
+                showChat(primaryStage);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        showReg(primaryStage);
     }
 
     public static void main(String[] args) {
