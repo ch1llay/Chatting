@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.lib.Message;
+
 import java.util.ArrayList;
 
 public class User {

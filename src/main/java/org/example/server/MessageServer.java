@@ -1,8 +1,11 @@
-package org.example;
+package org.example.server;
 
 // Server side
 
+import org.example.lib.ServerNode;
+
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
@@ -14,7 +17,8 @@ public class MessageServer {
     private static ArrayList<ServerNode> serverNodes;
 
     public static void main(String[] args) throws IOException {
-        var serverSocket = new ServerSocket(PORT);
+        var address = InetAddress.getAllByName("192.168.1.148");
+        var serverSocket = new ServerSocket(PORT, 50, address[0]);
         serverNodes = new ArrayList<>();
 
         while (true) {

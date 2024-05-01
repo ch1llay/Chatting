@@ -1,14 +1,10 @@
-package org.example;
+package org.example.lib;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.example.utils.Json;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ServerNode implements Runnable {

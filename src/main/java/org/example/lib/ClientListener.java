@@ -1,4 +1,4 @@
-package org.example;
+package org.example.lib;
 
 import org.example.utils.Json;
 

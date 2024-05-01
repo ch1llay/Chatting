@@ -1,10 +1,7 @@
 package org.example.ui;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -12,9 +9,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import org.example.Message;
-import org.example.MessageClient;
-import org.example.User;
+import org.example.lib.Message;
+import org.example.lib.MessageClient;
 import org.example.utils.Json;
 
 import java.io.IOException;
