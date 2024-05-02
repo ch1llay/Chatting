@@ -6,46 +6,67 @@ import org.example.utils.Json;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class ServerNode implements Runnable {
 
     private final Socket socket;
     private String username;
+    private User user;
 
     BufferedReader in;
     PrintWriter out;
 
     private final ArrayList<ServerNode> serverNodes;
-    private final ArrayList<User> users;
+    private final HashMap<String, User> users;
 
-    public ServerNode(Socket socket, ArrayList<ServerNode> serverNodes, ArrayList<User> users) {
+    public ServerNode(Socket socket, ArrayList<ServerNode> serverNodes, HashMap<String, User> users) {
         this.socket = socket;
         this.serverNodes = serverNodes;
         this.users = users;
     }
 
     private boolean Init() throws IOException {
+        var auth = false;
+
         System.out.println("New connection from " + socket.getInetAddress().toString());
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 
         username = in.readLine();
 
-        if (username == null) {
-            return false;
-        }
-        else {
+        if (username != null) {
             var c = serverNodes.stream().filter(x -> x.username.equals(username)).count();
             System.out.println(c);
-            if (c > 1) {
-                return false;
+            if (c <= 1) {
+                auth = true;
+
+                if(!users.containsKey(username)) {
+                    user = new User(username);
+                    users.put(username, user);
+                }
+                else{
+                    user = (User)users.get(username);
+                }
             }
 
-            System.out.println("Registered new user: " + username);
-            out.println("auth");
-            return true;
+            if(auth){
+                System.out.println("Registered new user: " + username);
+                var resp = new Message("auth");
+                out.println(Json.toJson(resp));
+                System.out.println(user.toString());
+            }
+            else{
+                System.out.println("Unregistered new user: " + username);
+                var resp = new Message("not auth");
+                out.println(Json.toJson(resp));
+            }
+
         }
+
+        return auth;
+
     }
 
     public void Execute() throws IOException {
@@ -88,7 +109,7 @@ public class ServerNode implements Runnable {
 
         } catch (Exception e) {
             serverNodes.remove(serverNodes.stream().filter(x -> x.username.equals(username)).findFirst().get());
-            System.out.println("Disconnected from " + socket.getInetAddress().toString());
+            System.out.println(String.format("user %s disconnected from %s", username, socket.getInetAddress().toString()));
             socket.close();
         }
     }
@@ -106,15 +127,20 @@ public class ServerNode implements Runnable {
         }
     }
 
-    public boolean sendTo(Message message) {
+    public void sendTo(Message message) {
         var node = serverNodes.stream().filter(x -> x.username.equals(message.To)).findFirst();
         if (node.isEmpty()) {
-            return false;
+            return;
+        }
+
+        user.AddSendingMessage(message);
+
+        if(users.containsKey(message.To)){
+            var userRecipient = users.get(message.To);
+            userRecipient.AddReceivingMessage(message);
         }
 
         node.get().Send(message);
-
-        return true;
     }
 
     public void Send(Message message) {

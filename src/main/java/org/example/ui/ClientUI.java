@@ -2,6 +2,7 @@ package org.example.ui;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -9,6 +10,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.example.lib.Message;
 import org.example.lib.MessageClient;
 import org.example.utils.Json;
@@ -25,17 +27,18 @@ public class ClientUI extends Application {
     MessageClient client;
     String username;
     private boolean isAuth;
+    TextArea chatLabel = new TextArea();
+
 
 
     private void showChat(Stage primaryStage) throws IOException {
         var grid = new GridPane();
-        var label = new TextArea();
 
-        label.setEditable(false);
+        chatLabel.setEditable(false);
         var sendButton = new Button(">");
         var textField = new TextField();
         var updateUsersButton = new Button("↻");
-        grid.add(label, 0, 0);
+        grid.add(chatLabel, 0, 0);
         grid.add(textField, 0, 1);
         grid.add(sendButton, 2, 1);
 
@@ -49,31 +52,6 @@ public class ClientUI extends Application {
 
         primaryStage.setScene(new Scene(grid, 520, 250));
         primaryStage.show();
-
-        client = new MessageClient(username);
-
-        client.StartReceiving((Message m) -> {
-            System.out.println(Json.toJson(m));
-            if (m.ServerResp != null) {
-                System.out.println(m.ServerResp);
-                if (m.ServerResp.equals("auth")){
-                    isAuth = true;
-                }
-                else if (m.Command.equals("get users")) {
-                    Users = new ArrayList<>(List.of(m.ServerResp.split(",")));
-                    System.out.println(Json.toJson(Users));
-                }
-                return;
-            }
-
-            if(isAuth) {
-                System.out.println(m.Text);
-                label.setText(label.getText() + m.From + ": " + m.Text + "\n");
-            }
-            else{
-                label.setText("Не авторизованы");
-            }
-        });
 
         updateUsersButton.setOnAction((ActionEvent e) -> {
             try {
@@ -93,7 +71,7 @@ public class ClientUI extends Application {
 
         sendButton.setOnAction((ActionEvent e) -> {
             var message = textField.getText();
-            label.setText(label.getText() + "me: " + message + "\n");
+            chatLabel.setText(chatLabel.getText() + "me: " + message + "\n");
             var to = combo.getSelectionModel().getSelectedItem();
             if (to != null) {
                 client.Send(to, message);
@@ -118,6 +96,33 @@ public class ClientUI extends Application {
         userNameButton.setOnAction((ActionEvent e) -> {
             username = userNameField.getText();
             try {
+
+                client = new MessageClient(username);
+
+                client.StartReceiving((Message m) -> {
+                    System.out.println(Json.toJson(m));
+                    if (m.ServerResp != null) {
+                        System.out.println(m.ServerResp);
+                        if (m.ServerResp.equals("auth")){
+                            isAuth = true;
+                        }
+                        else if (m.Command != null && m.Command.equals("get users")) {
+                            Users = new ArrayList<>(List.of(m.ServerResp.split(",")));
+                            System.out.println(Json.toJson(Users));
+                        }
+                    }
+
+                    if(isAuth) {
+                        System.out.println(m.Text);
+                        if (m.From != null) {
+                            chatLabel.setText(chatLabel.getText() + m.From + ": " + m.Text + "\n");
+                        }
+                    }
+                    else{
+                        JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Such name has been used", "Error", JOptionPane.ERROR_MESSAGE);
+                        System.exit(0);
+                    }
+                });
                 showChat(primaryStage);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "cannot connect to server");
@@ -131,6 +136,9 @@ public class ClientUI extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        primaryStage.setOnCloseRequest(windowEvent -> {
+            System.exit(0);
+        });
         showReg(primaryStage);
     }
 
