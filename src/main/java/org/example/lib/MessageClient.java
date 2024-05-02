@@ -55,6 +55,7 @@ public class MessageClient {
                 if (resp == null) {
                     continue;
                 }
+
                 var message = Json.fromJson(resp, Message.class);
                 f.accept(message);
             }

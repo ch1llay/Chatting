@@ -13,6 +13,7 @@ import org.example.lib.Message;
 import org.example.lib.MessageClient;
 import org.example.utils.Json;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,8 @@ public class ClientUI extends Application {
     ArrayList<String> Users;
     MessageClient client;
     String username;
+    private boolean isAuth;
+
 
     private void showChat(Stage primaryStage) throws IOException {
         var grid = new GridPane();
@@ -53,15 +56,23 @@ public class ClientUI extends Application {
             System.out.println(Json.toJson(m));
             if (m.ServerResp != null) {
                 System.out.println(m.ServerResp);
-                if (m.Command.equals("get users")) {
+                if (m.ServerResp.equals("auth")){
+                    isAuth = true;
+                }
+                else if (m.Command.equals("get users")) {
                     Users = new ArrayList<>(List.of(m.ServerResp.split(",")));
                     System.out.println(Json.toJson(Users));
                 }
                 return;
             }
 
-            System.out.println(m.Text);
-            label.setText(label.getText() + m.From + ": " + m.Text + "\n");
+            if(isAuth) {
+                System.out.println(m.Text);
+                label.setText(label.getText() + m.From + ": " + m.Text + "\n");
+            }
+            else{
+                label.setText("Не авторизованы");
+            }
         });
 
         updateUsersButton.setOnAction((ActionEvent e) -> {
@@ -91,6 +102,8 @@ public class ClientUI extends Application {
     }
 
     private void showReg(Stage primaryStage) {
+        primaryStage.setTitle("Chat");
+
         var gridUsername = new GridPane();
         var userNameField = new TextField();
         userNameField.promptTextProperty().setValue("username");
@@ -107,6 +120,8 @@ public class ClientUI extends Application {
             try {
                 showChat(primaryStage);
             } catch (IOException ex) {
+                JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "cannot connect to server");
+                System.exit(1);
                 throw new RuntimeException(ex);
             }
         });

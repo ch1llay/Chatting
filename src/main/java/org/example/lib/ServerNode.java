@@ -1,5 +1,6 @@
 package org.example.lib;
 
+import org.example.User;
 import org.example.utils.Json;
 
 import java.io.*;
@@ -16,10 +17,12 @@ public class ServerNode implements Runnable {
     PrintWriter out;
 
     private final ArrayList<ServerNode> serverNodes;
+    private final ArrayList<User> users;
 
-    public ServerNode(Socket socket, ArrayList<ServerNode> serverNodes) {
+    public ServerNode(Socket socket, ArrayList<ServerNode> serverNodes, ArrayList<User> users) {
         this.socket = socket;
         this.serverNodes = serverNodes;
+        this.users = users;
     }
 
     private boolean Init() throws IOException {
@@ -40,6 +43,7 @@ public class ServerNode implements Runnable {
             }
 
             System.out.println("Registered new user: " + username);
+            out.println("auth");
             return true;
         }
     }
