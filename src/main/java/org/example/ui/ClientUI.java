@@ -6,6 +6,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -49,7 +50,8 @@ public class ClientUI extends Application {
         grid.add(combo, 0, 2);
         grid.add(updateUsersButton, 1, 2);
 
-        primaryStage.setScene(new Scene(grid, 520, 250));
+        var scene = new Scene(grid, 520, 250);
+        primaryStage.setScene(scene);
         primaryStage.show();
 
         updateUsersButton.setOnAction((ActionEvent e) -> {
@@ -68,7 +70,7 @@ public class ClientUI extends Application {
             combo.getSelectionModel().clearAndSelect(0);
         });
 
-        sendButton.setOnAction((ActionEvent e) -> {
+        Runnable sendingFunc = ()->{
             var message = textField.getText();
 
             if(message.isEmpty()){
@@ -82,6 +84,15 @@ public class ClientUI extends Application {
             }
 
             textField.clear();
+        };
+
+        scene.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.ENTER){
+                sendingFunc.run();
+            }
+        });
+        sendButton.setOnAction((ActionEvent e) -> {
+            sendingFunc.run();
         });
     }
 
