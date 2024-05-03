@@ -3,11 +3,9 @@ package org.example.ui;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -33,6 +31,7 @@ public class ClientUI extends Application {
 
     private void showChat(Stage primaryStage) throws IOException {
         var grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
 
         chatLabel.setEditable(false);
         var sendButton = new Button(">");
@@ -83,12 +82,17 @@ public class ClientUI extends Application {
         primaryStage.setTitle("Chat");
 
         var gridUsername = new GridPane();
+        gridUsername.setAlignment(Pos.CENTER);
+        var label = new Label("username");
+
         var userNameField = new TextField();
         userNameField.promptTextProperty().setValue("username");
         var userNameButton = new Button("Зарегистрироваться в чате");
+        userNameButton.setFocusTraversable(true);
 
-        gridUsername.add(userNameField, 0, 0);
-        gridUsername.add(userNameButton, 0, 1);
+        gridUsername.add(label, 0, 0);
+        gridUsername.add(userNameField, 0, 1);
+        gridUsername.add(userNameButton, 0, 2);
 
         primaryStage.setScene(new Scene(gridUsername, 520, 250));
         primaryStage.show();

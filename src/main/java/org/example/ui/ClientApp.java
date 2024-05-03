@@ -1,6 +1,4 @@
-package org.example;
-
-import org.example.ui.ClientUI;
+package org.example.ui;
 
 public class ClientApp {
     public static void main(String[] args) {
