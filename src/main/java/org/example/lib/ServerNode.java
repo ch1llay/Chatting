@@ -52,13 +52,11 @@ public class ServerNode implements Runnable {
             }
 
             if(auth){
-                System.out.println("Registered new user: " + username);
                 var resp = new Message("auth");
                 out.println(Json.toJson(resp));
                 System.out.println(user.toString());
             }
             else{
-                System.out.println("Unregistered new user: " + username);
                 var resp = new Message("not auth");
                 out.println(Json.toJson(resp));
             }
@@ -87,7 +85,7 @@ public class ServerNode implements Runnable {
                     if (message.Command != null) {
                         if (message.Command.equals("get users")) {
                             System.out.println("users");
-                            var users = serverNodes.stream().map(x -> x.username).collect(Collectors.joining(","));
+                            var users = serverNodes.stream().filter(x -> !x.username.equals(username)).map(x -> x.username).collect(Collectors.joining(","));
                             var serverResp = new Message(users);
                             serverResp.To = username;
                             serverResp.Command = message.Command;
