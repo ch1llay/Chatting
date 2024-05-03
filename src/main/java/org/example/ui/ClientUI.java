@@ -70,11 +70,18 @@ public class ClientUI extends Application {
 
         sendButton.setOnAction((ActionEvent e) -> {
             var message = textField.getText();
+
+            if(message.isEmpty()){
+                return;
+            }
+
             chatLabel.setText(chatLabel.getText() + "me: " + message + "\n");
             var to = combo.getSelectionModel().getSelectedItem();
             if (to != null) {
                 client.Send(to, message);
             }
+
+            textField.clear();
         });
     }
 
