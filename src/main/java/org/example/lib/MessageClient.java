@@ -14,9 +14,9 @@ import static org.example.utils.Credentials.SERVER_ADDRESS;
 
 public class MessageClient {
 
-    private String username;
-    private PrintWriter out;
-    private BufferedReader in;
+    private final String username;
+    private final PrintWriter out;
+    private final BufferedReader in;
 
 
     public MessageClient(String username) throws IOException {

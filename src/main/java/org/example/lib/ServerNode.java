@@ -47,7 +47,7 @@ public class ServerNode implements Runnable {
                     users.put(username, user);
                 }
                 else{
-                    user = (User)users.get(username);
+                    user = users.get(username);
                 }
             }
 
@@ -93,13 +93,8 @@ public class ServerNode implements Runnable {
                             continue;
                         }
                     }
-                    System.out.printf("from %s: %s\n", username, resp);
+
                     sendTo(message);
-//                    for (Map.Entry<String, List<Message>> entry : messages.entrySet()) {
-//                        if (!entry.getKey().equals(username)) {
-//                            entry.getValue().add(new Message(message));
-//                        }
-//                    }
                 } else {
                     break;
                 }
@@ -107,7 +102,7 @@ public class ServerNode implements Runnable {
 
         } catch (Exception e) {
             serverNodes.remove(serverNodes.stream().filter(x -> x.username.equals(username)).findFirst().get());
-            System.out.println(String.format("user %s disconnected from %s", username, socket.getInetAddress().toString()));
+            System.out.printf("user %s disconnected from %s%n", username, socket.getInetAddress().toString());
             socket.close();
         }
     }

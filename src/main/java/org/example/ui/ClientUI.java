@@ -2,14 +2,12 @@ package org.example.ui;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.example.lib.Message;
 import org.example.lib.MessageClient;
 import org.example.utils.Json;
@@ -74,6 +72,7 @@ public class ClientUI extends Application {
             var message = textField.getText();
 
             if(message.isEmpty()){
+                JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Сообщение не должно быть пустым", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -117,6 +116,10 @@ public class ClientUI extends Application {
 
         userNameButton.setOnAction((ActionEvent e) -> {
             username = userNameField.getText();
+            if(username.isEmpty()){
+                JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Имя пользователя не должно быть пустым", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             try {
 
                 client = new MessageClient(username);
@@ -141,13 +144,13 @@ public class ClientUI extends Application {
                         }
                     }
                     else{
-                        JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Such name has been used", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Такое имя пользователя уже используется", "Error", JOptionPane.ERROR_MESSAGE);
                         System.exit(0);
                     }
                 });
                 showChat(primaryStage);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "cannot connect to server");
+                JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "Не удалось подключиться к серверу");
                 System.exit(1);
                 throw new RuntimeException(ex);
             }
